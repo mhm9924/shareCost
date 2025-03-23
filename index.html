@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Sharing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        .item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .paid {
+            background: #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+    <h2>Cost Sharing</h2>
+    <input type="text" id="description" placeholder="Enter description">
+    <input type="number" id="price" placeholder="Enter price">
+    <button onclick="addItem()">Add Item</button>
+    
+    <div id="items"></div>
+    
+    <h3>Total Cost: <span id="total">0</span></h3>
+    <h3>Each Person Pays: <span id="each">0</span></h3>
+    <button onclick="markAsPaid()">Mark as Paid</button>
+    
+    <script>
+        let totalCost = 0;
+        const numPeople = 4; // You and 3 others
+        let paid = false;
+
+        function addItem() {
+            let desc = document.getElementById('description').value;
+            let price = parseFloat(document.getElementById('price').value);
+            
+            if (!desc || isNaN(price) || price <= 0) {
+                alert('Please enter a valid description and price.');
+                return;
+            }
+            
+            totalCost += price;
+            document.getElementById('total').innerText = totalCost.toFixed(2);
+            document.getElementById('each').innerText = (totalCost / numPeople).toFixed(2);
+            
+            let itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+            itemDiv.innerHTML = `<strong>${desc}</strong>: $${price.toFixed(2)}`;
+            document.getElementById('items').appendChild(itemDiv);
+
+            // Clear input fields
+            document.getElementById('description').value = '';
+            document.getElementById('price').value = '';
+        }
+
+        function markAsPaid() {
+            if (totalCost === 0) {
+                alert('No costs to mark as paid.');
+                return;
+            }
+            
+            paid = !paid;
+            document.getElementById('items').classList.toggle('paid', paid);
+            document.getElementById('each').innerText = paid ? 'Paid' : (totalCost / numPeople).toFixed(2);
+        }
+    </script>
+</body>
+</html>
