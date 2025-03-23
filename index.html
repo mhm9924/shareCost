@@ -12,7 +12,7 @@
             max-width: 400px;
             margin: auto;
         }
-        input, button {
+        input, select, button {
             margin: 5px 0;
             padding: 10px;
             width: 100%;
@@ -33,6 +33,11 @@
 </head>
 <body>
     <h2>Cost Sharing</h2>
+    <select id="person">
+        <option value="MHM">MHM</option>
+        <option value="PMM">PMM</option>
+        <option value="KK">KK</option>
+    </select>
     <input type="text" id="description" placeholder="Enter description">
     <input type="number" id="price" placeholder="Enter price">
     <button onclick="addItem()">Add Item</button>
@@ -49,6 +54,7 @@
         let paid = false;
 
         function addItem() {
+            let person = document.getElementById('person').value;
             let desc = document.getElementById('description').value;
             let price = parseFloat(document.getElementById('price').value);
             
@@ -63,12 +69,26 @@
             
             let itemDiv = document.createElement('div');
             itemDiv.className = 'item';
-            itemDiv.innerHTML = `<strong>${desc}</strong>: $${price.toFixed(2)}`;
+            itemDiv.innerHTML = `<strong>${person} - ${desc}</strong>: $${price.toFixed(2)}
+                <button onclick="editItem(this, '${person}', '${desc}', ${price})">Edit</button>`;
             document.getElementById('items').appendChild(itemDiv);
 
             // Clear input fields
             document.getElementById('description').value = '';
             document.getElementById('price').value = '';
+        }
+
+        function editItem(button, person, desc, price) {
+            document.getElementById('person').value = person;
+            document.getElementById('description').value = desc;
+            document.getElementById('price').value = price;
+            
+            let itemDiv = button.parentElement;
+            totalCost -= price;
+            document.getElementById('total').innerText = totalCost.toFixed(2);
+            document.getElementById('each').innerText = (totalCost / numPeople).toFixed(2);
+            
+            itemDiv.remove();
         }
 
         function markAsPaid() {
