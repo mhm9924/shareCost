@@ -4,6 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cost Sharing</title>
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSAmA_1BcMonrWmOz6P5X_4kR7CMObiFE",
+            authDomain: "costshare-629bf.firebaseapp.com",
+            projectId: "costshare-629bf",
+            storageBucket: "costshare-629bf.appspot.com",
+            messagingSenderId: "385452539134",
+            appId: "1:385452539134:web:abb031143996abbe05b9af",
+            measurementId: "G-SCBXYFKK6R"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const itemsCollection = collection(db, "items");
+
+        // Function to render items from Firestore
+        function renderItems() {
+            const itemsContainer = document.getElementById('items');
+            const totalElement = document.getElementById('total');
+            const eachElement = document.getElementById('each');
+            let totalCost = 0;
+
+            onSnapshot(itemsCollection, (snapshot) => {
+                itemsContainer.innerHTML = '';
+                snapshot.forEach((docSnap) => {
+                    let item = docSnap.data();
+                    totalCost += item.price;
+
+                    let itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+                    itemDiv.innerHTML = `
+                        <strong>${item.person} - ${item.desc}</strong>: $${item.price.toFixed(2)}
+                        <button onclick="deleteItem('${docSnap.id}')">Delete</button>
+                    `;
+
+                    itemsContainer.appendChild(itemDiv);
+                });
+
+                totalElement.innerText = totalCost.toFixed(2);
+                eachElement.innerText = (totalCost / 4).toFixed(2);
+            });
+        }
+
+        // Function to add an item
+        async function addItem() {
+            let person = document.getElementById('person').value;
+            let desc = document.getElementById('description').value;
+            let price = parseFloat(document.getElementById('price').value);
+
+            if (!desc || isNaN(price) || price <= 0) {
+                alert('Please enter a valid description and price.');
+                return;
+            }
+
+            await addDoc(itemsCollection, { person, desc, price });
+
+            // Clear input fields
+            document.getElementById('description').value = '';
+            document.getElementById('price').value = '';
+        }
+
+        // Function to delete an item
+        async function deleteItem(id) {
+            await deleteDoc(doc(db, "items", id));
+        }
+
+        // Attach functions to window for button access
+        window.addItem = addItem;
+        window.deleteItem = deleteItem;
+
+        // Load items on page load
+        renderItems();
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,9 +105,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        .paid {
-            background: #c8e6c9;
-        }
     </style>
 </head>
 <body>
@@ -46,61 +122,5 @@
     
     <h3>Total Cost: <span id="total">0</span></h3>
     <h3>Each Person Pays: <span id="each">0</span></h3>
-    <button onclick="markAsPaid()">Mark as Paid</button>
-    
-    <script>
-        let totalCost = 0;
-        const numPeople = 4; // You and 3 others
-        let paid = false;
-
-        function addItem() {
-            let person = document.getElementById('person').value;
-            let desc = document.getElementById('description').value;
-            let price = parseFloat(document.getElementById('price').value);
-            
-            if (!desc || isNaN(price) || price <= 0) {
-                alert('Please enter a valid description and price.');
-                return;
-            }
-            
-            totalCost += price;
-            document.getElementById('total').innerText = totalCost.toFixed(2);
-            document.getElementById('each').innerText = (totalCost / numPeople).toFixed(2);
-            
-            let itemDiv = document.createElement('div');
-            itemDiv.className = 'item';
-            itemDiv.innerHTML = `<strong>${person} - ${desc}</strong>: $${price.toFixed(2)}
-                <button onclick="editItem(this, '${person}', '${desc}', ${price})">Edit</button>`;
-            document.getElementById('items').appendChild(itemDiv);
-
-            // Clear input fields
-            document.getElementById('description').value = '';
-            document.getElementById('price').value = '';
-        }
-
-        function editItem(button, person, desc, price) {
-            document.getElementById('person').value = person;
-            document.getElementById('description').value = desc;
-            document.getElementById('price').value = price;
-            
-            let itemDiv = button.parentElement;
-            totalCost -= price;
-            document.getElementById('total').innerText = totalCost.toFixed(2);
-            document.getElementById('each').innerText = (totalCost / numPeople).toFixed(2);
-            
-            itemDiv.remove();
-        }
-
-        function markAsPaid() {
-            if (totalCost === 0) {
-                alert('No costs to mark as paid.');
-                return;
-            }
-            
-            paid = !paid;
-            document.getElementById('items').classList.toggle('paid', paid);
-            document.getElementById('each').innerText = paid ? 'Paid' : (totalCost / numPeople).toFixed(2);
-        }
-    </script>
 </body>
 </html>
